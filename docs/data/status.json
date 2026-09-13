@@ -1,43 +1,41 @@
 {
   "chain": {
     "chain_ok": true,
-    "depth": 6702,
+    "depth": 6703,
     "supply": 8888,
-    "work_per_hit": 318809400925641.4
+    "work_per_hit": 319673780900141.06
   },
   "derived": {
     "best_leading_zeros": 238,
     "burn_usd_per_h": 3.751,
-    "ceiling_nfts": 0.239,
-    "eta_next_hit_min": 181.0,
-    "hours_left": 8.0,
-    "lambda_remaining": 0.2391,
-    "p_at_least_one": 0.213,
-    "pct_of_one_hit": 19.1
+    "ceiling_nfts": 0.238,
+    "eta_next_hit_min": 181.5,
+    "hours_left": 7.98,
+    "lambda_remaining": 0.2384,
+    "p_at_least_one": 0.212,
+    "pct_of_one_hit": 19.6
   },
-  "generated_at": "2026-09-13T18:15:19+00:00",
-  "generated_at_local": "2026-09-14 01:15:19",
+  "generated_at": "2026-09-13T18:16:30+00:00",
+  "generated_at_local": "2026-09-14 01:16:30",
   "miner": {
     "best_hash": "0x000000000002ad8f",
     "errors": 0,
     "found": true,
     "gpu_count": 8,
     "gpu_util": [
+      66,
+      65,
+      60,
       63,
       62,
-      60,
-      64,
       62,
-      64,
-      64,
+      63,
       60
     ],
-    "gpu_util_avg": 62.4,
-    "hashes_done": 60803063480320,
+    "gpu_util_avg": 62.6,
+    "hashes_done": 62571382046720,
     "log_tail": [
-      "45,806,581,186,560 hashes, 29.34 GH/s best=0x000000000002ad8f...",
-      "  46,689,314,406,400 hashes, 29.34 GH/s best=0x000000000002ad8f...",
-      "  47,572,047,626,240 hashes, 29.34 GH/s best=0x000000000002ad8f...",
+      "47,572,047,626,240 hashes, 29.34 GH/s best=0x000000000002ad8f...",
       "  48,456,206,909,440 hashes, 29.34 GH/s best=0x000000000002ad8f...",
       "  49,340,366,192,640 hashes, 29.34 GH/s best=0x000000000002ad8f...",
       "  50,224,525,475,840 hashes, 29.35 GH/s best=0x000000000002ad8f...",
@@ -52,7 +50,9 @@
       "  58,152,011,694,080 hashes, 29.34 GH/s best=0x000000000002ad8f...",
       "  59,034,744,913,920 hashes, 29.35 GH/s best=0x000000000002ad8f...",
       "  59,918,904,197,120 hashes, 29.35 GH/s best=0x000000000002ad8f...",
-      "  60,803,063,480,320 hashes, 29.35 GH/s best=0x000000000002ad8f..."
+      "  60,803,063,480,320 hashes, 29.35 GH/s best=0x000000000002ad8f...",
+      "  61,687,222,763,520 hashes, 29.35 GH/s best=0x000000000002ad8f...",
+      "  62,571,382,046,720 hashes, 29.35 GH/s best=0x000000000002ad8f..."
     ],
     "miner_procs": 1,
     "mints": 1,
@@ -61,7 +61,7 @@
   },
   "play": "prspct",
   "vast": {
-    "credit": 30.0237,
+    "credit": 29.9479,
     "dph_total": 3.7511111111111113,
     "gpu_name": "RTX 5090",
     "instance_status": "running",
