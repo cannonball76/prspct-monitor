@@ -1,0 +1,16 @@
+# Local config — holds host, port, key path. NEVER commit.
+monitor-config.json
+
+# Secrets, in any form
+*.key
+*.pem
+*token*
+*.env
+.env*
+
+# Python
+__pycache__/
+*.pyc
+
+# Logs
+*.log

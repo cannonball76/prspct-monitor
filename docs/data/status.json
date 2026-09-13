@@ -1,0 +1,46 @@
+{
+  "chain": {
+    "chain_error": "No module named 'gate'",
+    "chain_ok": false
+  },
+  "derived": {
+    "best_leading_zeros": 238,
+    "burn_usd_per_h": 3.751,
+    "hours_left": 0.29
+  },
+  "generated_at": "2026-09-13T17:57:43+00:00",
+  "generated_at_local": "2026-09-14 00:57:43",
+  "miner": {
+    "best_hash": "0x000000000002ad8f",
+    "errors": 0,
+    "found": true,
+    "gpu_count": 8,
+    "gpu_util": [
+      66,
+      66,
+      64,
+      60,
+      65,
+      62,
+      61,
+      60
+    ],
+    "gpu_util_avg": 63.0,
+    "hashes_done": 29923087482880,
+    "log_depth": 6693,
+    "log_expected": 324909498752499,
+    "miner_procs": 1,
+    "mints": 1,
+    "rate_ghs": 29.31,
+    "reachable": true
+  },
+  "play": "prspct",
+  "vast": {
+    "credit": 1.0893,
+    "dph_total": 3.7511111111111113,
+    "gpu_name": "RTX 5090",
+    "instance_status": "running",
+    "num_gpus": 8,
+    "vast_ok": true
+  }
+}

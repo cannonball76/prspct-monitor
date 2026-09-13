@@ -1,0 +1,18 @@
+{
+  "name": "prspct",
+  "chain_id": 4663,
+  "rpc": "https://rpc.mainnet.chain.robinhood.com",
+  "contract": "0xd078008c3D887A52CE722A3cA0539cA1F4971dD1",
+
+  "progress": { "source": "call", "fn": "depth()" },
+  "supply":   { "source": "call", "fn": "SUPPLY()" },
+
+  "work": { "derive": "from_target", "fn": "targetAt(uint256,uint256)", "extra_args": [0] },
+
+  "floor": { "source": "opensea", "slug": "prspct" },
+  "quote_usd": { "USDG": 1.0, "ETH": 4000.0 },
+
+  "our_hashrate_ghs": 42,
+  "rent_usd_per_h": 4.28,
+  "setup_minutes": 12
+}
