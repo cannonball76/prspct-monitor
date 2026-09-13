@@ -29,8 +29,14 @@ sys.path.insert(0, HERE)
 
 CONFIG = os.path.join(HERE, "monitor-config.json")
 
-# difficulty doubles every ~30 min (measured 2026-09-13, see evidence.md)
-DOUBLING_HOURS = 0.5
+# Difficulty doubling time, in hours.
+#
+# Was 0.5 (a guess carried from 2026-09-13). Measured 2026-09-14 on PRSPCT:
+# work grows x1.00271 per depth unit (256 units to double) and depth climbs
+# ~25 units/h, so Td = 256/25 ~= 10.2 h. Two independent windows agreed
+# (9.9 h short, 10.7 h long). The 0.5 figure understated the ceiling ~20x
+# and made P(>=1) look like 21% when it was ~87%.
+DOUBLING_HOURS = 10.2
 
 
 # ------------------------------------------------------------------ helpers

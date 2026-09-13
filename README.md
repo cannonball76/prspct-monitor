@@ -49,9 +49,9 @@ outcome is zero NFTs** — no amount of extra runtime fixes that.
 
 ## Why difficulty doubling matters
 
-Work per unit doubles roughly every 30 minutes. Your hashrate does not. So the
-number of units you can still get **halves every half hour**, and the total is
-bounded no matter how long you run:
+Work per unit doubles on a fixed schedule (measured: **~10.2 h** on PRSPCT).
+Your hashrate does not. So the number of units you can still get **halves every
+doubling period**, and the total is bounded no matter how long you run:
 
 ```
 ceiling = H · Td · 3600 / (W · ln2)
@@ -92,5 +92,8 @@ reliability and expect contention on the cheapest listings.
 - **8×5090 on a dedicated host is unmeasured.** 29.2 GH/s is a floor (shared host).
   Every ceiling number inherits that uncertainty — up to 45%.
 - **4090 / 3090 keccak rates are unmeasured.** Do not price a play on them.
-- The 30-minute doubling constant is derived from one measured network mint rate.
-  Re-measure per chain; do not assume it carries over.
+- **The doubling constant must be measured, never guessed.** A first pass used
+  0.5 h (a guess) against a real 10.2 h — that understated the ceiling ~20x and
+  reported P(>=1) as 8.7% when it was 86%. Measure it two ways: work growth per
+  depth unit (x1.00271 -> 256 units to double) and the depth climb rate
+  (~25 units/h), then divide. Re-measure per chain.
