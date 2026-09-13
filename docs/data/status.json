@@ -1,42 +1,49 @@
 {
   "chain": {
-    "chain_error": "No module named 'gate'",
-    "chain_ok": false
+    "chain_ok": true,
+    "depth": 6700,
+    "supply": 8888,
+    "work_per_hit": 317087646361805.4
   },
   "derived": {
     "best_leading_zeros": 238,
     "burn_usd_per_h": 3.751,
-    "hours_left": 0.29
+    "ceiling_nfts": 0.24,
+    "eta_next_hit_min": 180.2,
+    "hours_left": 0.2,
+    "lambda_remaining": 0.0588,
+    "p_at_least_one": 0.057,
+    "pct_of_one_hit": 12.2
   },
-  "generated_at": "2026-09-13T17:57:43+00:00",
-  "generated_at_local": "2026-09-14 00:57:43",
+  "generated_at": "2026-09-13T18:02:58+00:00",
+  "generated_at_local": "2026-09-14 01:02:58",
   "miner": {
     "best_hash": "0x000000000002ad8f",
     "errors": 0,
     "found": true,
     "gpu_count": 8,
     "gpu_util": [
-      66,
-      66,
-      64,
-      60,
+      65,
+      65,
+      63,
+      63,
+      62,
       65,
       62,
-      61,
-      60
+      63
     ],
-    "gpu_util_avg": 63.0,
-    "hashes_done": 29923087482880,
+    "gpu_util_avg": 63.5,
+    "hashes_done": 38751845744640,
     "log_depth": 6693,
     "log_expected": 324909498752499,
     "miner_procs": 1,
     "mints": 1,
-    "rate_ghs": 29.31,
+    "rate_ghs": 29.33,
     "reachable": true
   },
   "play": "prspct",
   "vast": {
-    "credit": 1.0893,
+    "credit": 0.7594,
     "dph_total": 3.7511111111111113,
     "gpu_name": "RTX 5090",
     "instance_status": "running",

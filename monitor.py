@@ -22,8 +22,9 @@ from datetime import datetime, timezone
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-# Optional local helper dir (e.g. a vastlib.py for Vast credit).
-sys.path.insert(0, os.path.expanduser("~/.prspct-monitor"))
+# Optional local helper dir, from config (e.g. a vastlib.py for rental credit).
+# Kept out of the repo so no personal path is hardcoded.
+sys.path.insert(0, HERE)
 
 CONFIG = os.path.join(HERE, "monitor-config.json")
 
@@ -162,6 +163,7 @@ def collect_vast(cfg):
         out["num_gpus"] = inst.get("num_gpus")
         out["vast_ok"] = True
     except Exception as exc:
+        # Public users have no vastlib: degrade this panel, keep the rest.
         out["vast_ok"] = False
         out["vast_error"] = str(exc)[:120]
     return out
@@ -269,6 +271,8 @@ def publish(out_path):
 
 def main():
     cfg = load_cfg()
+    if cfg.get("helper_dir"):
+        sys.path.insert(0, os.path.expanduser(cfg["helper_dir"]))
     if "--watch" in sys.argv:
         every = int(sys.argv[sys.argv.index("--watch") + 1])
         while True:
