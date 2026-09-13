@@ -1,22 +1,22 @@
 {
   "chain": {
     "chain_ok": true,
-    "depth": 6700,
+    "depth": 6702,
     "supply": 8888,
-    "work_per_hit": 317087646361805.4
+    "work_per_hit": 318809400925641.4
   },
   "derived": {
     "best_leading_zeros": 238,
     "burn_usd_per_h": 3.751,
-    "ceiling_nfts": 0.24,
-    "eta_next_hit_min": 180.2,
-    "hours_left": 0.17,
-    "lambda_remaining": 0.0497,
-    "p_at_least_one": 0.049,
-    "pct_of_one_hit": 13.6
+    "ceiling_nfts": 0.239,
+    "eta_next_hit_min": 181.0,
+    "hours_left": 8.05,
+    "lambda_remaining": 0.2391,
+    "p_at_least_one": 0.213,
+    "pct_of_one_hit": 17.4
   },
-  "generated_at": "2026-09-13T18:05:16+00:00",
-  "generated_at_local": "2026-09-14 01:05:16",
+  "generated_at": "2026-09-13T18:12:25+00:00",
+  "generated_at_local": "2026-09-14 01:12:25",
   "miner": {
     "best_hash": "0x000000000002ad8f",
     "errors": 0,
@@ -24,26 +24,24 @@
     "gpu_count": 8,
     "gpu_util": [
       66,
-      63,
-      61,
-      62,
       66,
-      65,
       60,
-      62
+      61,
+      65,
+      65,
+      62,
+      60
     ],
     "gpu_util_avg": 63.1,
-    "hashes_done": 43155529400320,
-    "log_depth": 6693,
-    "log_expected": 324909498752499,
+    "hashes_done": 55519498731520,
     "miner_procs": 1,
     "mints": 1,
-    "rate_ghs": 29.33,
+    "rate_ghs": 29.35,
     "reachable": true
   },
   "play": "prspct",
   "vast": {
-    "credit": 0.6276,
+    "credit": 30.1917,
     "dph_total": 3.7511111111111113,
     "gpu_name": "RTX 5090",
     "instance_status": "running",
