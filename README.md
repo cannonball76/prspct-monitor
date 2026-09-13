@@ -3,15 +3,19 @@
 Live dashboard + collector for **GPU proof-of-work mint races** (hash-under-target
 mints where difficulty climbs with every unit minted).
 
+**Live:** https://cannonball76.github.io/prspct-monitor/
+
 Built 2026-09-14 during the PRSPCT run, after a night where the miner was healthy
 but there was no single place to see *whether it was working, what it was earning,
 and how long was left*. This is that place.
 
 ```
 monitor.py                 collector — reads miner + chain + Vast, writes JSON
-dashboard/index.html       the UI — static, polls the JSON every 60s
+docs/index.html            the UI — static, polls the JSON every 60s
+gate.py                    bundled chain reader (public RPC only)
+play-spec.prspct.json      the play spec (contract, progress fn, work curve)
 monitor-config.example.json  copy to monitor-config.json and fill in
-dashboard/data/status.json the live output (regenerated each pass)
+docs/data/status.json      the live output (regenerated each pass)
 ```
 
 ## Run it
@@ -25,7 +29,7 @@ python3 monitor.py --watch 300                       # refresh every 5 min
 Then serve the dashboard (it needs a local server — `fetch` is blocked on `file://`):
 
 ```bash
-cd dashboard && python3 -m http.server 8787 --bind 127.0.0.1
+cd docs && python3 -m http.server 8787 --bind 127.0.0.1
 ```
 
 ## What it shows
