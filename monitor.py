@@ -291,11 +291,14 @@ def publish(out_path, cfg=None):
                            timeout=30, capture_output=True, text=True)
         if d.returncode == 0:
             return  # no change
-        subprocess.run(["git", "commit", "-q", "-m", "status: live refresh"],
+        # Amend rather than append: at a 90s cadence this branch would otherwise
+        # accumulate ~40 commits/hour of pure data churn.
+        subprocess.run(["git", "commit", "-q", "--amend", "-m", "status: live refresh"],
                        cwd=wt, timeout=30, capture_output=True, text=True)
         # HEAD:data, not `data`: the worktree is a detached checkout, so the
-        # local branch ref may point at a stale commit.
-        subprocess.run(["git", "push", "-q", "origin", "HEAD:data"], cwd=wt,
+        # local branch ref may point at a stale commit. Force, because amending
+        # rewrites that single commit.
+        subprocess.run(["git", "push", "-q", "-f", "origin", "HEAD:data"], cwd=wt,
                        timeout=90, capture_output=True, text=True)
     except Exception as exc:
         print("publish skipped:", str(exc)[:80])
