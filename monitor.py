@@ -15,6 +15,7 @@ import json
 import math
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -53,6 +54,19 @@ def ssh(cfg, remote_cmd, tmo=40):
     ], tmo=tmo)
 
 
+# The log goes into a PUBLIC file. Addresses and tx hashes are redacted here,
+# generically — never by matching a specific known address, which would itself
+# leak it into this source file.
+ADDR_RE = re.compile(r"0x[0-9a-fA-F]{40}")
+HASH_RE = re.compile(r"0x[0-9a-fA-F]{64}")
+
+def sanitize(text):
+    # Hashes first: a 64-hex string contains a 40-hex prefix, so redacting
+    # addresses first would mangle it into a false match.
+    text = HASH_RE.sub(lambda m: m.group(0)[:10] + "\u2026", text)
+    text = ADDR_RE.sub("0x\u2026redacted\u2026", text)
+    return text
+
 def load_cfg():
     cfg = json.load(open(CONFIG))
     # fall back to the harness's own record of the last rental
@@ -71,7 +85,8 @@ def collect_miner(cfg):
         f'tail -60 {cfg["remote_log"]} 2>/dev/null; '
         'echo "===PROC==="; pgrep -c -f "prspct_miner_v[5]" 2>/dev/null; '
         'echo "===GPU==="; nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader 2>/dev/null; '
-        f'echo "===MINTS==="; grep -c "mint confirmed" {cfg["remote_log"]} 2>/dev/null'
+        f'echo "===MINTS==="; grep -c "mint confirmed" {cfg["remote_log"]} 2>/dev/null; '
+        f'echo "===LOG==="; tail -18 {cfg["remote_log"]} 2>/dev/null'
     ))
     if not raw.strip():
         return out
@@ -79,7 +94,11 @@ def collect_miner(cfg):
 
     log_part, _, rest = raw.partition("===PROC===")
     proc_part, _, rest2 = rest.partition("===GPU===")
-    gpu_part, _, mint_part = rest2.partition("===MINTS===")
+    gpu_part, _, rest3 = rest2.partition("===MINTS===")
+    mint_part, _, logtail_part = rest3.partition("===LOG===")
+
+    # Sanitized log tail for the dashboard's live-log panel.
+    out["log_tail"] = [sanitize(l) for l in logtail_part.strip().splitlines() if l.strip()]
 
     try:
         out["miner_procs"] = int(proc_part.strip().splitlines()[0])
@@ -247,23 +266,36 @@ def once(cfg):
     return status
 
 
-def publish(out_path):
-    """Commit + push the regenerated JSON so GitHub Pages serves fresh data.
+def publish(out_path, cfg=None):
+    """Push the regenerated JSON to the data branch so the dashboard stays live.
 
-    Config-gated ({"push": true}) and silent on failure: a push problem must
-    never take down the collector. Credentials come from the local askpass
-    helper; nothing secret is ever written into the repo.
+    Why a separate branch: GitHub Pages rebuilds on every push to the branch it
+    serves and is rate-limited (~10 builds/hour), which adds a minute or more of
+    lag. raw.githubusercontent serves any branch straight from git with no build
+    step and no such limit, so live data goes to `data` while `main` stays clean.
+
+    Config-gated ({"push": true}) and silent on failure: a push problem must never
+    take down the collector. Credentials come from the local askpass helper;
+    nothing secret is ever written into the repo.
     """
     try:
-        subprocess.run(["git", "add", out_path], cwd=HERE, timeout=30,
+        wt = os.path.expanduser((cfg or {}).get("data_worktree", "~/.prspct-data"))
+        if not os.path.isdir(wt):
+            return  # live publishing not set up on this host; local file is enough
+        dst = os.path.join(wt, "docs", "data", "status.json")
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        shutil.copyfile(out_path, dst)
+        subprocess.run(["git", "add", "-A"], cwd=wt, timeout=30,
                        capture_output=True, text=True)
-        d = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=HERE,
+        d = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=wt,
                            timeout=30, capture_output=True, text=True)
         if d.returncode == 0:
             return  # no change
         subprocess.run(["git", "commit", "-q", "-m", "status: live refresh"],
-                       cwd=HERE, timeout=30, capture_output=True, text=True)
-        subprocess.run(["git", "push", "-q", "origin", "HEAD:main"], cwd=HERE,
+                       cwd=wt, timeout=30, capture_output=True, text=True)
+        # HEAD:data, not `data`: the worktree is a detached checkout, so the
+        # local branch ref may point at a stale commit.
+        subprocess.run(["git", "push", "-q", "origin", "HEAD:data"], cwd=wt,
                        timeout=90, capture_output=True, text=True)
     except Exception as exc:
         print("publish skipped:", str(exc)[:80])
@@ -279,7 +311,7 @@ def main():
             try:
                 once(cfg)
                 if cfg.get("push"):
-                    publish(os.path.join(HERE, cfg["out"]))
+                    publish(os.path.join(HERE, cfg["out"]), cfg)
             except Exception as exc:
                 print("collect failed:", exc)
             time.sleep(every)

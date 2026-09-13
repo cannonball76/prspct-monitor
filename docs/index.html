@@ -37,6 +37,15 @@
   .err{background:rgba(248,81,73,.1);border:1px solid var(--bad);border-radius:8px;
        padding:10px 12px;color:var(--bad);font-size:13px;margin-bottom:14px}
   .stale{border-color:var(--warn)}
+  .log{background:#010409;border:1px solid var(--line);border-radius:8px;
+       padding:10px 12px;font-size:11.5px;line-height:1.55;max-height:300px;
+       overflow-y:auto;white-space:pre-wrap;word-break:break-all;color:#9da7b3}
+  .log b{color:var(--good);font-weight:600}
+  .log .mt{color:var(--accent)}
+  .pill{display:inline-block;font-size:10px;padding:1px 6px;border-radius:20px;
+        background:var(--line);color:var(--dim);margin-left:6px;vertical-align:middle}
+  .live{background:rgba(63,185,80,.18);color:var(--good)}
+  .lag{background:rgba(210,153,34,.18);color:var(--warn)}
 </style>
 </head>
 <body>
@@ -65,12 +74,15 @@
     </div>
   </div>
 
+  <h2>Live miner log <span class="pill" id="logage">–</span></h2>
+  <div class="log" id="log">waiting for first sample…</div>
+
   <h2>Mining</h2>
   <table>
     <tr><td>Hashes done</td><td id="hashes">–</td></tr>
     <tr><td>Best hash</td><td id="best">–</td></tr>
     <tr><td>Best leading zeros</td><td id="zeros">–</td></tr>
-    <tr><td>Chain depth</td><td id="depth">–</td></tr>
+    <tr><td>Chain depth <span class="pill" id="depthsrc">–</span></td><td id="depth">–</td></tr>
     <tr><td>Hashes per hit (now)</td><td id="work">–</td></tr>
     <tr><td>ETA to next hit</td><td id="eta">–</td></tr>
     <tr><td>Ceiling (all time)</td><td id="ceiling">–</td></tr>
@@ -91,37 +103,98 @@
 </div>
 
 <script>
+// ---- where the live data lives -------------------------------------------------
+// A dedicated `data` branch served straight from git. No Pages build step, so no
+// build queue and no ~10-builds/hour limit — the file is as fresh as the last push.
+const LIVE = "https://raw.githubusercontent.com/cannonball76/prspct-monitor/data/docs/data/status.json";
+const LOCAL = "data/status.json";
+
+// Chain reads happen in the browser: the RPC sends access-control-allow-origin: *,
+// so depth can be shown truly live instead of waiting for the next collector push.
+const RPC = "https://rpc.mainnet.chain.robinhood.com";
+const CONTRACT = "0xd078008c3D887A52CE722A3cA0539cA1F4971dD1";
+const SEL_DEPTH = "0x631c56ef";   // depth()
+
+let lastGood = 0, lastStamp = null;
+
 const fmt = (n, d=0) => n==null ? "–" :
   Number(n).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
-
-function ghs(x){ return x==null ? "–" : fmt(x,2)+" GH/s"; }
 function usd(x){ return x==null ? "–" : "$"+fmt(x,2); }
-function pct(x){ return x==null ? "–" : fmt(x*100,1)+"%"; }
-
-function cls(el, v, warn, bad){
-  el.className = "v " + (v==null ? "" : v>=bad ? "bad" : v>=warn ? "warn" : "good");
-}
 
 async function load(){
   try{
-    const r = await fetch("data/status.json?_=" + Date.now(), {cache:"no-store"});
-    if(!r.ok) throw new Error("status.json HTTP " + r.status);
+    // raw.githubusercontent respects a cache-buster and reports source-age 0
+    const r = await fetch(LIVE + "?_=" + Date.now(), {cache:"no-store"});
+    if(!r.ok) throw new Error("live HTTP " + r.status);
     render(await r.json());
     document.getElementById("err").innerHTML = "";
+    lastGood = Date.now();
   }catch(e){
-    document.getElementById("err").innerHTML =
-      '<div class="err">Cannot read data/status.json — ' + e.message +
-      '<br><small>The collector may not have run yet, or this page is open as file:// (use a local server).</small></div>';
+    // fall back to the copy Pages itself serves, so the page never goes blank
+    try{
+      const r2 = await fetch(LOCAL + "?_=" + Date.now(), {cache:"no-store"});
+      if(!r2.ok) throw new Error("local HTTP " + r2.status);
+      render(await r2.json());
+      document.getElementById("err").innerHTML =
+        '<div class="err">Live source unreachable (' + e.message +
+        ') — showing the last Pages copy.</div>';
+      lastGood = Date.now();
+    }catch(e2){
+      document.getElementById("err").innerHTML =
+        '<div class="err">Cannot read live or local data — ' + e2.message + '</div>';
+    }
+  }
+}
+
+// True-live depth, straight from the chain, independent of the collector cadence.
+async function liveDepth(){
+  const el = document.getElementById("depth"), tag = document.getElementById("depthsrc");
+  try{
+    const r = await fetch(RPC, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({jsonrpc:"2.0", id:1, method:"eth_call",
+        params:[{to:CONTRACT, data:SEL_DEPTH}, "latest"]})
+    });
+    const j = await r.json();
+    if(!j.result) throw new Error("no result");
+    el.textContent = fmt(parseInt(j.result, 16));
+    tag.textContent = "live"; tag.className = "pill live";
+  }catch(e){
+    tag.textContent = "from sample"; tag.className = "pill";
+  }
+}
+
+function renderLog(tail, stamp){
+  const el = document.getElementById("log");
+  const age = document.getElementById("logage");
+  if(!tail || !tail.length){ el.textContent = "no log lines in the last sample"; return; }
+
+  el.innerHTML = tail.map(l=>{
+    let s = l.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+    s = s.replace(/(\d[\d,]*)\s+hashes/, '<b>$1 hashes</b>');
+    s = s.replace(/(\d+\.\d+)\s*GH\/s/, '<b>$1 GH/s</b>');
+    s = s.replace(/(mint confirmed|valid proof found)/gi, '<b>$1</b>');
+    return s;
+  }).join("\n");
+
+  const ageS = stamp ? Math.round((Date.now() - new Date(stamp.replace(" ","T")+ "+07:00").getTime())/1000) : null;
+  if(ageS == null || isNaN(ageS)){ age.textContent = "–"; age.className="pill"; }
+  else {
+    age.textContent = ageS < 90 ? ageS+"s old" : Math.round(ageS/60)+"m old";
+    age.className = "pill " + (ageS < 180 ? "live" : "lag");
   }
 }
 
 function render(s){
   const m = s.miner || {}, c = s.chain || {}, v = s.vast || {}, d = s.derived || {};
 
+  lastStamp = s.generated_at_local;
   document.getElementById("stamp").textContent =
-    "updated " + (s.generated_at_local || "?") + " local · instance " + (s.instance_id || "?");
+    "sample " + (s.generated_at_local || "?") + " · play " + (s.play || "?");
 
   document.getElementById("rate").textContent = fmt(m.rate_ghs, 2);
+  document.getElementById("rate_n").textContent =
+    m.reachable ? "GH/s · miner up" : "GH/s · unreachable";
   document.getElementById("util").textContent = m.gpu_util_avg == null ? "–" : fmt(m.gpu_util_avg,0)+"%";
   document.getElementById("util_n").textContent = (m.gpu_count||0) + " cards";
   document.getElementById("pct").textContent = d.pct_of_one_hit == null ? "–" : fmt(d.pct_of_one_hit,1)+"%";
@@ -135,17 +208,18 @@ function render(s){
     d.lambda_remaining == null ? "over remaining credit"
                                : "λ=" + fmt(d.lambda_remaining,3) + " over credit";
 
-  // gpus
   const g = document.getElementById("gpus");
   const utils = m.gpu_util || [];
   g.innerHTML = utils.length
     ? utils.map((u,i)=>`<div class="gpu ${u>40?"on":""}">${i}<br>${u}%</div>`).join("")
     : '<div class="gpu" style="flex:1">no data</div>';
 
+  renderLog(m.log_tail, s.generated_at_local);
+
   document.getElementById("hashes").textContent = m.hashes_done ? fmt(m.hashes_done) : "–";
   document.getElementById("best").textContent = m.best_hash ? m.best_hash.slice(0,22)+"…" : "–";
   document.getElementById("zeros").textContent = d.best_leading_zeros ?? "–";
-  document.getElementById("depth").textContent = c.depth ? fmt(c.depth) : "–";
+  if(c.depth) document.getElementById("depth").textContent = fmt(c.depth);
   document.getElementById("work").textContent =
     c.work_per_hit ? c.work_per_hit.toExponential(3) : "–";
   document.getElementById("eta").textContent =
@@ -155,7 +229,7 @@ function render(s){
   document.getElementById("procs").textContent = m.miner_procs ?? "–";
 
   const f = document.getElementById("found");
-  f.textContent = m.found ? "YES 🎉" : "no";
+  f.textContent = m.mints ? "YES 🎉 (" + m.mints + ")" : (m.found ? "YES 🎉" : "no");
   f.className = m.found ? "good" : "";
 
   document.getElementById("credit").textContent = usd(v.credit);
@@ -170,7 +244,9 @@ function render(s){
 }
 
 load();
-setInterval(load, 60000);
+liveDepth();
+setInterval(load, 30000);      // live sample every 30s
+setInterval(liveDepth, 30000); // chain depth every 30s
 </script>
 </body>
 </html>
