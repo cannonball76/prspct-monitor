@@ -113,7 +113,11 @@ const LOCAL = "data/status.json";
 // so depth can be shown truly live instead of waiting for the next collector push.
 const RPC = "https://rpc.mainnet.chain.robinhood.com";
 const CONTRACT = "0xd078008c3D887A52CE722A3cA0539cA1F4971dD1";
-const SEL_DEPTH = "0x631c56ef";   // depth()
+const SEL_DEPTH = "0x631c56ef";              // depth()
+const SEL_TARGET = "0xb2e8a6ff";             // targetAt(uint256,uint256)
+const RATE_REF = 29.3e9;                     // GH/s fallback until a sample lands
+
+let lastWork = null, lastRate = null;
 
 let lastGood = 0, lastStamp = null;
 
@@ -146,18 +150,40 @@ async function load(){
   }
 }
 
-// True-live depth, straight from the chain, independent of the collector cadence.
-async function liveDepth(){
-  const el = document.getElementById("depth"), tag = document.getElementById("depthsrc");
+const hex32 = n => BigInt(n).toString(16).padStart(64, "0");
+
+async function ethCall(data){
+  const r = await fetch(RPC, {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({jsonrpc:"2.0", id:1, method:"eth_call",
+      params:[{to:CONTRACT, data}, "latest"]})
+  });
+  const j = await r.json();
+  if(!j.result || j.result === "0x") throw new Error("empty result");
+  return BigInt(j.result);
+}
+
+// Depth, hashes-per-hit and ETA computed straight from the chain in the browser.
+// GitHub's CDN caches the JSON for minutes on both Pages and raw.githubusercontent,
+// so these are the numbers that can be genuinely live; the log can only be as
+// fresh as the last collector push.
+async function liveChain(){
+  const tag = document.getElementById("depthsrc");
   try{
-    const r = await fetch(RPC, {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({jsonrpc:"2.0", id:1, method:"eth_call",
-        params:[{to:CONTRACT, data:SEL_DEPTH}, "latest"]})
-    });
-    const j = await r.json();
-    if(!j.result) throw new Error("no result");
-    el.textContent = fmt(parseInt(j.result, 16));
+    const depth = await ethCall(SEL_DEPTH);
+    document.getElementById("depth").textContent = fmt(Number(depth));
+
+    // targetAt(depth, 0) -> target; work per hit = 2^256 / target
+    const t = await ethCall(SEL_TARGET + hex32(depth) + hex32(0));
+    if(t > 0n){
+      const work = Number((1n << 256n) / t);
+      lastWork = work;
+      document.getElementById("work").textContent = work.toExponential(3);
+      const rate = lastRate || RATE_REF;
+      const etaMin = work / rate / 60;
+      document.getElementById("eta").textContent = fmt(etaMin,1) + " min";
+      document.getElementById("pct_bar").style.width = "0%";
+    }
     tag.textContent = "live"; tag.className = "pill live";
   }catch(e){
     tag.textContent = "from sample"; tag.className = "pill";
@@ -217,6 +243,7 @@ function render(s){
   renderLog(m.log_tail, s.generated_at_local);
 
   document.getElementById("hashes").textContent = m.hashes_done ? fmt(m.hashes_done) : "–";
+  if(m.rate_ghs) lastRate = m.rate_ghs * 1e9;
   document.getElementById("best").textContent = m.best_hash ? m.best_hash.slice(0,22)+"…" : "–";
   document.getElementById("zeros").textContent = d.best_leading_zeros ?? "–";
   if(c.depth) document.getElementById("depth").textContent = fmt(c.depth);
@@ -244,9 +271,9 @@ function render(s){
 }
 
 load();
-liveDepth();
-setInterval(load, 30000);      // live sample every 30s
-setInterval(liveDepth, 30000); // chain depth every 30s
+liveChain();
+setInterval(load, 30000);        // sample (CDN-limited)
+setInterval(liveChain, 30000);   // chain-derived numbers (truly live)
 </script>
 </body>
 </html>

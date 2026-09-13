@@ -10,13 +10,13 @@
     "burn_usd_per_h": 3.751,
     "ceiling_nfts": 0.238,
     "eta_next_hit_min": 181.5,
-    "hours_left": 7.93,
+    "hours_left": 7.92,
     "lambda_remaining": 0.2384,
     "p_at_least_one": 0.212,
-    "pct_of_one_hit": 21.5
+    "pct_of_one_hit": 21.8
   },
-  "generated_at": "2026-09-13T18:19:50+00:00",
-  "generated_at_local": "2026-09-14 01:19:50",
+  "generated_at": "2026-09-13T18:20:18+00:00",
+  "generated_at_local": "2026-09-14 01:20:18",
   "miner": {
     "best_hash": "0x000000000002ad8f",
     "errors": 0,
@@ -25,18 +25,17 @@
     "gpu_util": [
       66,
       66,
-      60,
-      60,
-      65,
       62,
       60,
+      66,
+      63,
+      62,
       59
     ],
-    "gpu_util_avg": 62.2,
-    "hashes_done": 68740532142080,
+    "gpu_util_avg": 63.0,
+    "hashes_done": 69623265361920,
     "log_tail": [
-      "53,759,736,545,280 hashes, 29.35 GH/s best=0x000000000002ad8f...",
-      "  54,642,469,765,120 hashes, 29.35 GH/s best=0x000000000002ad8f...",
+      "54,642,469,765,120 hashes, 29.35 GH/s best=0x000000000002ad8f...",
       "  55,519,498,731,520 hashes, 29.35 GH/s best=0x000000000002ad8f...",
       "  56,397,953,761,280 hashes, 29.35 GH/s best=0x000000000002ad8f...",
       "  57,282,113,044,480 hashes, 29.35 GH/s best=0x000000000002ad8f...",
@@ -52,7 +51,8 @@
       "  66,096,610,672,640 hashes, 29.35 GH/s best=0x000000000002ad8f...",
       "  66,977,917,829,120 hashes, 29.35 GH/s best=0x000000000002ad8f...",
       "  67,859,224,985,600 hashes, 29.35 GH/s best=0x000000000002ad8f...",
-      "  68,740,532,142,080 hashes, 29.35 GH/s best=0x000000000002ad8f..."
+      "  68,740,532,142,080 hashes, 29.35 GH/s best=0x000000000002ad8f...",
+      "  69,623,265,361,920 hashes, 29.35 GH/s best=0x000000000002ad8f..."
     ],
     "miner_procs": 1,
     "mints": 1,
@@ -61,7 +61,7 @@
   },
   "play": "prspct",
   "vast": {
-    "credit": 29.7354,
+    "credit": 29.6933,
     "dph_total": 3.7511111111111113,
     "gpu_name": "RTX 5090",
     "instance_status": "running",
